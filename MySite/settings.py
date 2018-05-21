@@ -131,3 +131,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS =[
     os.path.join(BASE_DIR, 'templates/static')
 ]
+
+#自定义引用
+EACH_BLOGS_PAGE_NUM = 7
