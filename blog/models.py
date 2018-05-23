@@ -15,10 +15,19 @@ class Blog(models.Model):
     content = RichTextUploadingField()
     blog_type = models.ForeignKey(BlogType,on_delete=models.DO_NOTHING)
     author = models.ForeignKey(User,on_delete=models.DO_NOTHING)
+
     created_time = models.DateTimeField(auto_now_add=True)
     last_updated_time = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "<Blog:%s>" %self.title
+
+    def read_num(self):
+        return self.readnum.read_num
+
     class Meta:
         ordering =['-created_time']
+
+class ReadNum(models.Model):
+    read_num = models.IntegerField(default=0)
+    blog = models.OneToOneField(Blog, on_delete=models.DO_NOTHING)

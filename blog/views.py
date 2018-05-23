@@ -4,7 +4,7 @@ from django.core.paginator import  Paginator
 from django.conf import settings
 from django.db.models import Count
 # Create your views here.
-from blog.models import Blog,BlogType
+from blog.models import Blog,BlogType,ReadNum
 
 def blog_list_common_data(request,blogs_all_list):
     paginator = Paginator(blogs_all_list, settings.EACH_BLOGS_PAGE_NUM)  # 每2页进行分页
@@ -72,9 +72,20 @@ def blogs_with_date(request, year, month):
 
 
 def blog_detail(request, blog_pk):
-    context = {}
     blog = get_object_or_404(Blog,pk= blog_pk)
+    if not request.COOKIES.get('blog_%s_read'%blog_pk):     #获取cookie,不存在的话,数量加1
+        if ReadNum.objects.filter(blog=blog):          #根据ReadNum这个model,用blog过滤出相应的bLog
+            #存在记录,则根据blog获取那个对应的blog
+            readnum = ReadNum.objects.get(blog=blog)
+        else:
+            #不存在记录,则创建blog
+            readnum = ReadNum(blog=blog)
+        readnum.read_num += 1
+        readnum.save()
+    context = {}
     context['previous_blog'] = Blog.objects.filter(created_time__gt=blog.created_time).last() #根据创建时间筛选,获取早于该博客的所有,然后拿到最后一个,即为上一篇博客
     context['next_blog'] = Blog.objects.filter(created_time__lt=blog.created_time).first()    #同上,获取下一条博客内容
     context['blog'] = blog
-    return render_to_response('blog/blog_detail.html', context)
+    response = render_to_response('blog/blog_detail.html', context)
+    response.set_cookie('blog_%s_read'% blog_pk,'true')#将看过的文章ID存储到cookie中,未设置过期时间,默认为退出浏览器该cookie过期
+    return response
