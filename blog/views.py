@@ -87,5 +87,5 @@ def blog_detail(request, blog_pk):
     context['next_blog'] = Blog.objects.filter(created_time__lt=blog.created_time).first()    #同上,获取下一条博客内容
     context['blog'] = blog
     response = render_to_response('blog/blog_detail.html', context)
-    response.set_cookie('blog_%s_read'% blog_pk,'true')#将看过的文章ID存储到cookie中,未设置过期时间,默认为退出浏览器该cookie过期
+    response.set_cookie('blog_%s_read'% blog_pk, 'true')#将看过的文章ID存储到cookie中,未设置过期时间,默认为退出浏览器该cookie过期
     return response
