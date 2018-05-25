@@ -6,6 +6,7 @@ from django.db.models import Count
 # Create your views here.
 from blog.models import Blog,BlogType,ReadNum
 
+
 def blog_list_common_data(request,blogs_all_list):
     paginator = Paginator(blogs_all_list, settings.EACH_BLOGS_PAGE_NUM)  # 每2页进行分页
     page_num = request.GET.get('page', 1)  # 拿到GET请求的page,默认显示第一页,这里设置的首页显示前10条
