@@ -4,7 +4,8 @@ from django.core.paginator import  Paginator
 from django.conf import settings
 from django.db.models import Count
 # Create your views here.
-from blog.models import Blog,BlogType,ReadNum
+from .models import Blog, BlogType
+from read_statistics.util import read_statistics_once_read
 
 
 def blog_list_common_data(request,blogs_all_list):
@@ -49,15 +50,12 @@ def blog_list_common_data(request,blogs_all_list):
     context['blog_dates'] = blog_dates_dict
     return  context
 
-
 def blog_list(request):
     blogs_all_list = Blog.objects.all()
     context = blog_list_common_data(request,blogs_all_list)
     return render_to_response('blog/blog_list.html', context)
 
 def blogs_with_type(request , blog_type_pk):
-
-
 
     blog_type = get_object_or_404(BlogType,pk=blog_type_pk)
     blogs_all_list = Blog.objects.filter(blog_type=blog_type)
@@ -74,19 +72,12 @@ def blogs_with_date(request, year, month):
 
 def blog_detail(request, blog_pk):
     blog = get_object_or_404(Blog,pk= blog_pk)
-    if not request.COOKIES.get('blog_%s_read'%blog_pk):     #获取cookie,不存在的话,数量加1
-        if ReadNum.objects.filter(blog=blog):          #根据ReadNum这个model,用blog过滤出相应的bLog
-            #存在记录,则根据blog获取那个对应的blog
-            readnum = ReadNum.objects.get(blog=blog)
-        else:
-            #不存在记录,则创建blog
-            readnum = ReadNum(blog=blog)
-        readnum.read_num += 1
-        readnum.save()
+    read_cookie_key = read_statistics_once_read(request, blog)
+
     context = {}
     context['previous_blog'] = Blog.objects.filter(created_time__gt=blog.created_time).last() #根据创建时间筛选,获取早于该博客的所有,然后拿到最后一个,即为上一篇博客
     context['next_blog'] = Blog.objects.filter(created_time__lt=blog.created_time).first()    #同上,获取下一条博客内容
     context['blog'] = blog
     response = render_to_response('blog/blog_detail.html', context)
-    response.set_cookie('blog_%s_read'% blog_pk, 'true')#将看过的文章ID存储到cookie中,未设置过期时间,默认为退出浏览器该cookie过期
+    response.set_cookie(read_cookie_key, 'true')#将看过的文章ID存储到cookie中,未设置过期时间,默认为退出浏览器该cookie过期
     return response
