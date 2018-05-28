@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db.models import Count
 # Create your views here.
 from .models import Blog, BlogType
-from read_statistics.util import read_statistics_once_read
+from read_statistics.utils import read_statistics_once_read
 
 
 def blog_list_common_data(request,blogs_all_list):
